@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="epidemic management system" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="ajax-demo1" target="11" />
+      <module name="brand-case" target="8" />
+      <module name="brand-case (1)" target="8" />
+      <module name="brand_demo" target="11" />
+      <module name="filter-demo" target="11" />
+      <module name="spring-learn" target="8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

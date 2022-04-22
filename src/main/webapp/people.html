@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .el-table .warning-row {
+            background: oldlace;
+        }
+
+        .el-table .success-row {
+            background: #f0f9eb;
+        }
+    </style>
+
+</head>
+<body>
+<div id="app">
+
+    <!--搜索表单-->
+    <el-form :inline="true"  class="demo-form-inline">
+
+        <el-form-item label="根据身份证信息搜索">
+            <el-input v-model="cardId" placeholder="身份证号码"></el-input>
+        </el-form-item>
+
+        <el-form-item>
+            <el-button type="primary" @click="onSubmit">查询</el-button>
+        </el-form-item>
+    </el-form>
+
+    <!--按钮-->
+
+    <el-row>
+
+        <el-button type="danger" plain @click="deleteByids">批量删除</el-button>
+        <el-button type="primary" plain @click="dialogVisible = true">新增</el-button>
+
+    </el-row>
+    <!--添加数据对话框表单-->
+    <el-dialog
+            title="增加数据"
+            :visible.sync="dialogVisible"
+            width="30%"
+            >
+        <el-form ref="form" :model="people" label-width="100px">
+            <el-form-item label="名字">
+                <el-input v-model="people.name"></el-input>
+            </el-form-item>
+
+            <el-form-item label="性别">
+                <el-input v-model="people.sex"></el-input>
+            </el-form-item>
+
+            <el-form-item label="身份证">
+                <el-input v-model="people.cardId"></el-input>
+            </el-form-item>
+
+            <el-form-item label="核酸结果">
+                <el-input type="textarea" v-model="people.covidTest"></el-input>
+            </el-form-item>
+
+            <el-form-item label="接种疫苗情况">
+                <el-input type="textarea" v-model="people.vaccination"></el-input>
+            </el-form-item>
+
+            <el-form-item>
+                <el-button type="primary" @click="addBrand">提交</el-button>
+                <el-button @click="dialogVisible = false">取消</el-button>
+            </el-form-item>
+        </el-form>
+    </el-dialog>
+
+    <!--添加数据对话框表单-->
+    <el-dialog
+            title="增加数据"
+            :visible.sync="dialogVisible2"
+            width="30%"
+    >
+        <el-form ref="form" :model="newdata" label-width="100px">
+            <el-form-item label="名字">
+                <el-input v-model="newdata.name"></el-input>
+            </el-form-item>
+
+            <el-form-item label="性别">
+                <el-input v-model="newdata.sex"></el-input>
+            </el-form-item>
+
+            <el-form-item label="身份证">
+                <el-input v-model="newdata.cardId"></el-input>
+            </el-form-item>
+
+            <el-form-item label="核酸结果">
+                <el-input type="textarea" v-model="newdata.covidTest"></el-input>
+            </el-form-item>
+
+            <el-form-item label="接种疫苗情况">
+                <el-input type="textarea" v-model="newdata.vaccination"></el-input>
+            </el-form-item>
+
+            <el-form-item>
+                <el-button type="primary" @click="update">提交</el-button>
+                <el-button @click="dialogVisible2 = false">取消</el-button>
+            </el-form-item>
+        </el-form>
+    </el-dialog>
+    <!--表格-->
+    <template>
+        <el-table
+                :data="tableData"
+                style="width: 100%"
+                :row-class-name="tableRowClassName"
+                @selection-change="handleSelectionChange"
+        >
+            <el-table-column
+                    type="selection"
+                    width="55">
+            </el-table-column>
+            <el-table-column
+                    type="index"
+                    width="50">
+            </el-table-column>
+
+            <el-table-column
+                    prop="name"
+                    label="名字"
+                    align="center"
+            >
+            </el-table-column>
+            <el-table-column
+                    prop="sex"
+                    label="性别"
+                    align="center"
+            >
+            </el-table-column>
+            <el-table-column
+                    prop="cardId"
+                    align="center"
+                    label="身份证">
+            </el-table-column>
+            <el-table-column
+                    prop="covidTest"
+                    align="center"
+                    label="核酸检测">
+            </el-table-column>
+
+            <el-table-column
+                    prop="vaccination"
+                    align="center"
+                    label="疫苗接种情况">
+            </el-table-column>
+
+            <el-table-column
+                    align="center"
+                    label="操作">
+
+                <template slot-scope="scope">
+                    <el-button @click="getwindow(scope.row)"  type="primary" size="small">编辑</el-button>
+                    <el-button @click="deleteById(scope.row)" type="danger" size="small">删除</el-button>
+                </template>
+
+            </el-table-column>
+
+        </el-table>
+    </template>
+
+    <!--分页工具条-->
+    <el-pagination
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+            :current-page="currentPage"
+            :page-sizes="[5, 10, 15, 20]"
+            :page-size="5"
+            layout="total, sizes, prev, pager, next, jumper"
+            :total="totalCount">
+    </el-pagination>
+
+    <!--弹窗提醒-->
+
+
+</div>
+
+
+<script src="js/vue.js"></script>
+<script src="element-ui/lib/index.js"></script>
+<script src="js/axios-0.18.0.js"></script>
+<link rel="stylesheet" href="element-ui/lib/theme-chalk/index.css">
+
+<script>
+    // import {axios} from "./js/axios-0.18.0";
+    new Vue({
+        el: "#app",
+        methods: {
+            selectAll(){
+                axios({
+                    method:"post",
+                    url:"http://127.0.0.1:9993/sqlcase/data/selectByPage?currentPage="+this.currentPage+"&pageSize="+this.pageSize,
+                    data:this.people
+                }).then(resp=>{
+                        this.tableData = resp.data.row;
+                        this.totalCount = resp.data.totalCount;
+                    }
+                )
+            },
+            tableRowClassName({row, rowIndex}) {
+                if (rowIndex === 1) {
+                    return 'warning-row';
+                } else if (rowIndex === 3) {
+                    return 'success-row';
+                }
+                return '';
+            },
+            // 复选框选中后执行的方法
+            handleSelectionChange(val) {
+                this.multipleSelection = val;
+
+                // console.log(this.multipleSelection)
+            },
+            // 查询方法
+            onSubmit() {
+                axios({
+                    method:"post",
+                    url:"http://127.0.0.1:9993/sqlcase/data/selectByCardId",
+                    data:this.cardId
+                }).then(resp=>{
+                        this.tableData = resp.data;
+                        this.totalCount = 1;
+                    }
+                )
+            },
+            // 添加数据
+            addBrand(){
+                //发送ajax请求,添加数据
+                var _this=this;
+                axios({
+                    method: "post",
+                    url: "http://127.0.0.1:9993/sqlcase/data/add",
+                    data: _this.people
+                }).then(function(resp){
+                    if (resp.data === "success"){
+                        //添加成功
+                        //关闭窗口
+                        _this.dialogVisible = false;
+                        //重新查询
+                        _this.selectAll();
+                        //弹窗提示
+                        _this.$message({
+                            message: '恭喜你,添加成功',
+                            type: 'success'
+                        });
+                    }
+                })
+            },
+
+            //分页
+            handleSizeChange(val) {
+                // console.log(`每页 ${val} 条`);
+                this.pageSize=val;
+
+            },
+            handleCurrentChange(val) {
+                // console.log(`当前页: ${val}`);
+                this.currentPage=val;
+                this.selectAll();
+            },
+
+            //批量删除
+            deleteByids(){
+                for (let i=0; i<this.multipleSelection.length;i++){
+                    let selectionElement = this.multipleSelection[i].id;
+                    this.selectedids[i] = selectionElement
+                }
+                //2.发送ajax请求
+                var _this=this
+                this.$confirm('此操作将永久删除数据, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    axios({
+                        method: "post",
+                        url: "http://127.0.0.1:9993/sqlcase/data/deleteByIds",
+                        data: _this.selectedids,
+                    }).then(function(resp){
+                        if (resp.data === "success"){
+                            //删除成功
+                            //重新查询
+                            _this.selectAll();
+                            //弹窗提示
+                            _this.$message({
+                                message: '恭喜你,删除成功',
+                                type: 'success'
+                            });
+                        }
+                    })
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
+            },
+            //单个删除
+            deleteById(row){
+                //2.发送ajax请求
+                var _this=this
+                this.$confirm('此操作将永久删除数据, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    axios({
+                        method: "post",
+                        url: "http://127.0.0.1:9993/sqlcase/data/deleteById",
+                        data: row,
+                    }).then(function(resp){
+                        if (resp.data === "success"){
+                            //删除成功
+                            //重新查询
+                            _this.selectAll();
+                            //弹窗提示
+                            _this.$message({
+                                message: '恭喜你,删除成功',
+                                type: 'success'
+                            });
+                        }
+                    })
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
+            },
+            //修改数据
+            getwindow(row){
+                this.dialogVisible2 = true;
+                this.newdata.id = row.id;
+                this.newdata.name = row.name;
+                this.newdata.sex = row.sex;
+                this.newdata.cardId = row.cardId;
+                this.newdata.covidTest = row.covidTest;
+                this.newdata.vaccination = row.vaccination;
+            },
+            update(){
+                //2.发送ajax请求
+                var _this=this
+                this.$confirm('此操作将永久修改数据, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    axios({
+                        method: "post",
+                        url: "http://127.0.0.1:9993/sqlcase/data/update",
+                        data: _this.newdata,
+                    }).then(function(resp){
+                        if (resp.data === "success"){
+                            //修改成功
+                            //重新查询
+                            _this.selectAll();
+                            _this.dialogVisible2=false;
+                            //弹窗提示
+                            _this.$message({
+                                message: '恭喜你,修改成功',
+                                type: 'success'
+                            });
+                        }
+                    })
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消修改'
+                    });
+                });
+            }
+        },
+        data() {
+            return {
+                // 当前页码
+                currentPage: 1,
+                // 添加数据对话框是否展示的标记
+                dialogVisible: false,
+                // 总记录数
+                totalCount:1,
+                // 页面显示条数
+                pageSize:5,
+                // 人体数据情况
+                people: {
+                    id: '',
+                    name: '',
+                    sex: '',
+                    cardId:"",
+                    covidTest:"",
+                    vaccination:""
+                },
+                newdata:{
+                    id: '',
+                    name: '',
+                    sex: '',
+                    cardId:"",
+                    covidTest:"",
+                    vaccination:""
+                },
+                // 复选框选中数据集合
+                multipleSelection: [],
+                // 表格数据
+                tableData: [],
+                // 被选中的id数组
+                selectedids:[],
+                dialogVisible2:false,
+                cardId:'',
+            }
+        },
+        mounted(){
+            this.selectAll()
+        }
+    })
+
+</script>
+
+</body>
+</html>
